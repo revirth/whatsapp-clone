@@ -1,9 +1,9 @@
-import React from "react";
-import { chats } from "../../db";
+import React, { useState, useMemo } from "react";
 import moment from "moment";
 import { List, ListItem } from "@material-ui/core";
 import styled from "styled-components";
 
+// #region styled
 const Container = styled.div`
   height: calc(100% - 56px);
   overflow-y: overlay;
@@ -55,28 +55,41 @@ const MessageDate = styled.div`
   right: 0;
   font-size: 13px;
 `;
+// #endregion
 
-const ChatList: React.FC = () => (
-  <Container>
-    <StyledList>
-      {chats.map(chat => (
-        <StyledListItem key={chat.id}>
-          <ChatPicture src={chat.picture} alt="Profile" />
-          <ChatInfo>
-            <ChatName>{chat.name}</ChatName>
-            {chat.lastMessage && (
-              <React.Fragment>
-                <MessageContent>{chat.lastMessage.content}</MessageContent>
-                <MessageDate>
-                  {moment(chat.lastMessage.createdAt).format("HH:mm")}
-                </MessageDate>
-              </React.Fragment>
-            )}
-          </ChatInfo>
-        </StyledListItem>
-      ))}
-    </StyledList>
-  </Container>
-);
+const ChatList = () => {
+  // get, set a state of the component
+  const [chats, setChats] = useState<any[]>([]);
+
+  // computate only once the component has mounted
+  useMemo(async () => {
+    const body = await fetch(`${process.env.REACT_APP_SERVER_URL}/chats`);
+    const chats = await body.json();
+    setChats(chats);
+  }, []);
+
+  return (
+    <Container>
+      <StyledList>
+        {chats.map(chat => (
+          <StyledListItem key={chat.id}>
+            <ChatPicture src={chat.picture} alt="Profile" />
+            <ChatInfo>
+              <ChatName>{chat.name}</ChatName>
+              {chat.lastMessage && (
+                <React.Fragment>
+                  <MessageContent>{chat.lastMessage.content}</MessageContent>
+                  <MessageDate>
+                    {moment(chat.lastMessage.createdAt).format("HH:mm")}
+                  </MessageDate>
+                </React.Fragment>
+              )}
+            </ChatInfo>
+          </StyledListItem>
+        ))}
+      </StyledList>
+    </Container>
+  );
+};
 
 export default ChatList;
