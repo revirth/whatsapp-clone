@@ -1,11 +1,16 @@
 import React from "react";
 import ChatList from "./ChatList";
 import ChatNavbar from "./ChatNavbar";
+import { History } from "history";
 
-const ChatListScreen: React.FC = () => (
+interface ChatsListScreenProps {
+  history: History;
+}
+
+const ChatListScreen: React.FC<ChatsListScreenProps> = ({ history }) => (
   <div>
     <ChatNavbar />
-    <ChatList />
+    <ChatList history={history} />
   </div>
 );
 
