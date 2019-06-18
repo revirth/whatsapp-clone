@@ -1,11 +1,13 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { History } from "history";
 import ChatNavbar from "./ChatNavbar";
 import MessagesList from "./MessagesList";
 import MessageInput from "./MessageInput";
+import { useApolloClient, useQuery } from "react-apollo-hooks";
+import gql from "graphql-tag";
 
-const getChatQuery = `
+const getChatQuery = gql`
   query GetChat($chatId: ID!) {
     chat(chatId: $chatId) {
       id
@@ -51,26 +53,12 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
   history,
   chatId
 }) => {
-  const [chat, setChat] = useState<OptionalChatQueryResult>(null);
-
-  useMemo(async () => {
-    const body = await fetch(`${process.env.REACT_APP_SERVER_URL}/graphql`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        query: getChatQuery,
-        variables: { chatId }
-      })
-    });
-
-    const {
-      data: { chat }
-    } = await body.json();
-
-    setChat(chat);
-  }, [chatId]);
+  const client = useApolloClient();
+  const {
+    data: { chat }
+  } = useQuery<any>(getChatQuery, {
+    variables: { chatId }
+  });
 
   const onSendMessage = useCallback(
     (content: string) => {
@@ -79,17 +67,22 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
       const message = {
         id: (chat.messages.length + 10).toString(),
         createdAt: Date.now(),
-        content
+        content,
+        __typename: "Chat"
       };
 
-      console.log(chat.messages);
-
-      setChat({
-        ...chat,
-        messages: chat.messages.concat(message)
+      client.writeQuery({
+        query: getChatQuery,
+        variables: { chatId },
+        data: {
+          chat: {
+            ...chat,
+            messages: chat.messages.concat(message)
+          }
+        }
       });
     },
-    [chat]
+    [chat, chatId, client]
   );
 
   if (!chat) return null;
