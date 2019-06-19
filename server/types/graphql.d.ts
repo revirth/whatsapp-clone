@@ -1,56 +1,63 @@
-import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import { Message, Chat } from '../db';
+import {
+  GraphQLResolveInfo,
+  GraphQLScalarType,
+  GraphQLScalarTypeConfig
+} from "graphql";
+import { Message, Chat } from "../db";
+import { MyContext } from "../context";
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string,
-  String: string,
-  Boolean: boolean,
-  Int: number,
-  Float: number,
-  Date: Date,
+  ID: string;
+  String: string;
+  Boolean: boolean;
+  Int: number;
+  Float: number;
+  Date: Date;
 };
 
 export type Chat = {
-  __typename?: 'Chat',
-  id: Scalars['ID'],
-  name: Scalars['String'],
-  picture: Scalars['String'],
-  lastMessage?: Maybe<Message>,
-  messages: Array<Message>,
+  __typename?: "Chat";
+  id: Scalars["ID"];
+  name: Scalars["String"];
+  picture: Scalars["String"];
+  lastMessage?: Maybe<Message>;
+  messages: Array<Message>;
 };
 
-
 export type Message = {
-  __typename?: 'Message',
-  id: Scalars['ID'],
-  content: Scalars['String'],
-  createdAt: Scalars['Date'],
+  __typename?: "Message";
+  id: Scalars["ID"];
+  content: Scalars["String"];
+  createdAt: Scalars["Date"];
+  chat?: Maybe<Chat>;
 };
 
 export type Mutation = {
-  __typename?: 'Mutation',
-  addMessage?: Maybe<Message>,
+  __typename?: "Mutation";
+  addMessage?: Maybe<Message>;
 };
 
-
 export type MutationAddMessageArgs = {
-  chatId: Scalars['ID'],
-  content: Scalars['String']
+  chatId: Scalars["ID"];
+  content: Scalars["String"];
 };
 
 export type Query = {
-  __typename?: 'Query',
-  chats: Array<Chat>,
-  chat?: Maybe<Chat>,
+  __typename?: "Query";
+  chats: Array<Chat>;
+  chat?: Maybe<Chat>;
 };
-
 
 export type QueryChatArgs = {
-  chatId: Scalars['ID']
+  chatId: Scalars["ID"];
 };
 
+export type Subscription = {
+  __typename?: "Subscription";
+  messageAdded: Message;
+};
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -58,7 +65,6 @@ export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   context: TContext,
   info: GraphQLResolveInfo
 ) => Promise<TResult> | TResult;
-
 
 export type StitchingResolver<TResult, TParent, TContext, TArgs> = {
   fragment: string;
@@ -88,8 +94,15 @@ export interface SubscriptionResolverObject<TResult, TParent, TContext, TArgs> {
   resolve?: SubscriptionResolveFn<TResult, TParent, TContext, TArgs>;
 }
 
-export type SubscriptionResolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
-  | ((...args: any[]) => SubscriptionResolverObject<TResult, TParent, TContext, TArgs>)
+export type SubscriptionResolver<
+  TResult,
+  TParent = {},
+  TContext = {},
+  TArgs = {}
+> =
+  | ((
+      ...args: any[]
+    ) => SubscriptionResolverObject<TResult, TParent, TContext, TArgs>)
   | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>;
 
 export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
@@ -100,7 +113,12 @@ export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
 
 export type NextResolverFn<T> = () => Promise<T>;
 
-export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs = {}> = (
+export type DirectiveResolverFn<
+  TResult = {},
+  TParent = {},
+  TContext = {},
+  TArgs = {}
+> = (
   next: NextResolverFn<TResult>,
   parent: TParent,
   args: TArgs,
@@ -110,54 +128,98 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Query: {},
-  Chat: Chat,
-  ID: Scalars['ID'],
-  String: Scalars['String'],
-  Message: Message,
-  Date: Scalars['Date'],
-  Mutation: {},
-  Boolean: Scalars['Boolean'],
+  Query: {};
+  Chat: Chat;
+  ID: Scalars["ID"];
+  String: Scalars["String"];
+  Message: Message;
+  Date: Scalars["Date"];
+  Mutation: {};
+  Subscription: {};
+  Boolean: Scalars["Boolean"];
 };
 
-export type ChatResolvers<ContextType = any, ParentType = ResolversTypes['Chat']> = {
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  picture?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  lastMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType>,
-  messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>,
+export type ChatResolvers<
+  ContextType = MyContext,
+  ParentType = ResolversTypes["Chat"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  picture?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  lastMessage?: Resolver<
+    Maybe<ResolversTypes["Message"]>,
+    ParentType,
+    ContextType
+  >;
+  messages?: Resolver<
+    Array<ResolversTypes["Message"]>,
+    ParentType,
+    ContextType
+  >;
 };
 
-export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
-  name: 'Date'
+export interface DateScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["Date"], any> {
+  name: "Date";
 }
 
-export type MessageResolvers<ContextType = any, ParentType = ResolversTypes['Message']> = {
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>,
+export type MessageResolvers<
+  ContextType = MyContext,
+  ParentType = ResolversTypes["Message"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  content?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes["Date"], ParentType, ContextType>;
+  chat?: Resolver<Maybe<ResolversTypes["Chat"]>, ParentType, ContextType>;
 };
 
-export type MutationResolvers<ContextType = any, ParentType = ResolversTypes['Mutation']> = {
-  addMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, MutationAddMessageArgs>,
+export type MutationResolvers<
+  ContextType = MyContext,
+  ParentType = ResolversTypes["Mutation"]
+> = {
+  addMessage?: Resolver<
+    Maybe<ResolversTypes["Message"]>,
+    ParentType,
+    ContextType,
+    MutationAddMessageArgs
+  >;
 };
 
-export type QueryResolvers<ContextType = any, ParentType = ResolversTypes['Query']> = {
-  chats?: Resolver<Array<ResolversTypes['Chat']>, ParentType, ContextType>,
-  chat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, QueryChatArgs>,
+export type QueryResolvers<
+  ContextType = MyContext,
+  ParentType = ResolversTypes["Query"]
+> = {
+  chats?: Resolver<Array<ResolversTypes["Chat"]>, ParentType, ContextType>;
+  chat?: Resolver<
+    Maybe<ResolversTypes["Chat"]>,
+    ParentType,
+    ContextType,
+    QueryChatArgs
+  >;
 };
 
-export type Resolvers<ContextType = any> = {
-  Chat?: ChatResolvers<ContextType>,
-  Date?: GraphQLScalarType,
-  Message?: MessageResolvers<ContextType>,
-  Mutation?: MutationResolvers<ContextType>,
-  Query?: QueryResolvers<ContextType>,
+export type SubscriptionResolvers<
+  ContextType = MyContext,
+  ParentType = ResolversTypes["Subscription"]
+> = {
+  messageAdded?: SubscriptionResolver<
+    ResolversTypes["Message"],
+    ParentType,
+    ContextType
+  >;
 };
 
+export type Resolvers<ContextType = MyContext> = {
+  Chat?: ChatResolvers<ContextType>;
+  Date?: GraphQLScalarType;
+  Message?: MessageResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
+  Query?: QueryResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
+};
 
 /**
  * @deprecated
  * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
-*/
-export type IResolvers<ContextType = any> = Resolvers<ContextType>;
+ */
+export type IResolvers<ContextType = MyContext> = Resolvers<ContextType>;

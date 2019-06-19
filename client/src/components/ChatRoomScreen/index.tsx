@@ -6,14 +6,13 @@ import MessagesList from "./MessagesList";
 import MessageInput from "./MessageInput";
 import { useApolloClient, useQuery, useMutation } from "react-apollo-hooks";
 import gql from "graphql-tag";
-import * as queries from "../../graphql/queries";
 import * as fragments from "../../graphql/fragments";
-import { defaultDataIdFromObject } from "apollo-cache-inmemory";
 import {
   useGetChatQuery,
   useAddMessageMutation,
   ChatsQuery
 } from "../../graphql/types";
+import { writeMessage } from "../../services/cache.service";
 
 const getChatQuery = gql`
   query GetChat($chatId: ID!) {
@@ -45,10 +44,6 @@ interface ChatRoomScreenParams {
   history: History;
 }
 
-interface ChatsResult {
-  chats: any[];
-}
-
 const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
   history,
   chatId
@@ -75,66 +70,15 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
               .toString(36)
               .substr(2, 9),
             createdAt: new Date(),
+            chat: {
+              __typename: "Chat",
+              id: chatId
+            },
             content
           }
         },
         update: (client, { data: { addMessage } }) => {
-          type FullChat = { [key: string]: any };
-          let fullChat;
-          const chatIdFromStore = defaultDataIdFromObject(addMessage.chat);
-          if (chatIdFromStore === null) return;
-
-          try {
-            fullChat = client.readFragment<FullChat>({
-              id: chatIdFromStore,
-              fragment: fragments.fullchat,
-              fragmentName: "FullChat"
-            });
-          } catch (e) {
-            return;
-          }
-
-          if (fullChat === null || fullChat.messages === null) return;
-          if (
-            fullChat.messages.messages.some((m: any) => m.id === addMessage.id)
-          )
-            return;
-
-          fullChat.messages.messages.push(addMessage);
-          fullChat.lastMessage = addMessage;
-
-          client.writeFragment({
-            id: chatIdFromStore,
-            fragment: fragments.fullchat,
-            fragmentName: "FullChat",
-            data: fullChat
-          });
-
-          let data: ChatsQuery | null;
-          try {
-            data = client.readQuery({
-              query: queries.chats
-            });
-          } catch (e) {
-            return;
-          }
-          if (!data || !data.chats) return null;
-          const chats = data.chats;
-
-          const chatIndex = chats.findIndex((c: any) => {
-            if (addMessage === null || addMessage.chat === null) return -1;
-            return c.id === addMessage.chat.chatId;
-          });
-          if (chatIndex === -1) return;
-
-          const chatWhereAdded = chats[chatIndex];
-          chats.splice(chatIndex, 1);
-          chats.unshift(chatWhereAdded);
-
-          client.writeQuery({
-            query: queries.chats,
-            data: { chats: chats }
-          });
+          writeMessage(client, addMessage);
         }
       });
     },
