@@ -5,7 +5,7 @@ import message from "./message.fragment";
 export default gql`
   fragment FullChat on Chat {
     ...Chat
-    message {
+    messages {
       ...Message
     }
   }

@@ -3,7 +3,6 @@ import { History } from "history";
 import styled from "styled-components";
 import { Button, Toolbar } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import { ChatQueryResult } from "./index";
 import { useCallback } from "react";
 
 const Container = styled(Toolbar)`
@@ -36,7 +35,10 @@ const Name = styled.div`
 
 interface ChatNavbarProps {
   history: History;
-  chat: ChatQueryResult;
+  chat?: {
+    picture?: string | null;
+    name?: string | null;
+  };
 }
 
 const ChatNavbar: React.FC<ChatNavbarProps> = ({ chat, history }) => {
@@ -49,8 +51,12 @@ const ChatNavbar: React.FC<ChatNavbarProps> = ({ chat, history }) => {
       <BackButton onClick={navBack}>
         <ArrowBackIcon />
       </BackButton>
-      <Picture src={chat.picture} />
-      <Name>{chat.name}</Name>
+      {chat && chat.picture && chat.name && (
+        <React.Fragment>
+          <Picture data-testid="chat-picture" src={chat.picture} />
+          <Name data-testid="chat-name">{chat.name}</Name>
+        </React.Fragment>
+      )}
     </Container>
   );
 };
